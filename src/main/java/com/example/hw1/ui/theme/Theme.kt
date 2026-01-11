@@ -15,7 +15,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.example.hw1.Conversation
+
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,

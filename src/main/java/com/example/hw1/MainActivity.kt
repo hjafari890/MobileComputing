@@ -34,103 +34,141 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+
 data class Message(val author: String, val body: String)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
-
             Hw1Theme {
-                Conversation(SampleData.conversationSample)
-                Surface(Modifier.fillMaxSize()) {
-                    Conversation(SampleData.conversationSample)
+                val navController = rememberNavController()
+
+                NavHost(navController = navController, startDestination = "main") {
+
+                    composable("main") {
+                        MainScreen(onNavigateToHw1 = {
+                            navController.navigate("hw1") {
+                                popUpTo("main") { saveState = true }
+                                launchSingleTop = true
+                            }
+                        })
+                    }
+
+                    composable("hw1") {
+                        Hw1Screen {
+                            navController.navigate(route = "main") {
+                                popUpTo("main") { inclusive = true }
+                            }
+
+                        }
+                    }
                 }
             }
-
-
         }
     }
-}
 
-@Composable
-fun MessageCard(msg: Message) {
-    var isExpanded by remember { mutableStateOf(false) }
+    @Composable
+    fun Hw1Screen(onBack: () -> Unit) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            androidx.compose.material3.Button(
+                onClick = onBack,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                androidx.compose.material3.Text("← Back to Home")
+            }
 
-    Row(modifier = Modifier.padding(all = 15.dp)) {
-        Image(
-            painter = painterResource(R.drawable.profile_picture),
-            contentDescription = "Contact profile picture",
-            modifier = Modifier
+            // This calls your existing list function
+            Conversation(com.example.hw1.ui.theme.SampleData.conversationSample)
+        }
+    }
 
-                .size(70.dp)
-                .clip(CircleShape)
-                .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        val surfaceColor by animateColorAsState(
-            if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-        )
+    @Composable
+    fun MessageCard(msg: Message) {
+        var isExpanded by remember { mutableStateOf(false) }
 
-        Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
-            Text(
-                text = msg.author,
-                color = MaterialTheme.colorScheme.secondary,
-                style = MaterialTheme.typography.titleSmall
+        Row(modifier = Modifier.padding(all = 15.dp)) {
+            Image(
+                painter = painterResource(R.drawable.profile_picture),
+                contentDescription = "Contact profile picture",
+                modifier = Modifier
+
+                    .size(70.dp)
+                    .clip(CircleShape)
+                    .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            val surfaceColor by animateColorAsState(
+                if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
+                Text(
+                    text = msg.author,
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.titleSmall
+                )
 
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                shadowElevation = 5.dp,
-                color = surfaceColor,
-                modifier = Modifier.animateContentSize().padding(1.dp)
-            )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    shadowElevation = 5.dp,
+                    color = surfaceColor,
+                    modifier = Modifier.animateContentSize().padding(1.dp)
+                )
                 {
-                Text      (
-                                text = msg.body,
-                                modifier = Modifier.padding(all = 4.dp),
-                                maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                                style = MaterialTheme.typography.bodyMedium
-                         )
+                    Text(
+                        text = msg.body,
+                        modifier = Modifier.padding(all = 4.dp),
+                        maxLines = if (isExpanded) Int.MAX_VALUE else 1,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
 
 
+            }
+        }
+    }
+
+
+    @Composable
+    fun Conversation(messages: List<Message>) {
+        LazyColumn {
+            items(messages) { message ->
+                MessageCard(msg = message)
+            }
+        }
+    }
+
+    @Preview(name = "Light Mode")
+    @Preview(
+        uiMode = Configuration.UI_MODE_NIGHT_YES,
+        showBackground = true,
+        name = "Dark Mode"
+    )
+    @Composable
+    fun PreviewConversation() {
+        Hw1Theme {
+            Conversation(SampleData.conversationSample)
+        }
+    }
+
+    @Composable
+    fun PreviewMessageCard() {
+        Hw1Theme() {
+            Surface {
+                MessageCard(
+                    msg = Message("HELLLOOO", "Have a look at this, great!")
+                )
+
+            }
         }
     }
 }
 
 
-@Composable
-fun Conversation(messages: List<Message>) {
-    LazyColumn {
-        items(messages) { message ->
-            MessageCard(msg = message)
-        }
-    }
-}
 
-@Preview(name = "Light Mode")
-@Preview(
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true,
-    name = "Dark Mode"
-)
-@Composable
-fun PreviewConversation() {
-    Hw1Theme {
-        Conversation(SampleData.conversationSample)
-    }
-}
-@Composable
-fun PreviewMessageCard() {
-    Hw1Theme() {
-        Surface {
-            MessageCard(
-                msg = Message("HELLLOOO", "Have a look at this, great!"))
-
-        }
-    }
-}
